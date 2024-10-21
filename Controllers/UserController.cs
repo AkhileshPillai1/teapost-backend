@@ -16,11 +16,13 @@ namespace TeaPost.Controllers
         private readonly ApplicationDBContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IUserService _userService;
-        public UserController(ApplicationDBContext dbContext, IConfiguration configuration, IUserService userService)
+        private readonly JwtSecurityTokenHandler _jwtHandler;
+        public UserController(ApplicationDBContext dbContext, IConfiguration configuration, IUserService userService, JwtSecurityTokenHandler jwtHandler)
         {
             _dbContext = dbContext;
             _configuration = configuration;
             _userService = userService;
+            _jwtHandler = jwtHandler;
         }
 
         [HttpGet("Login")]
@@ -63,7 +65,7 @@ namespace TeaPost.Controllers
             try
             {
                 var authToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
+                var jwtToken = _jwtHandler.ReadJwtToken(authToken);
                 int id = Convert.ToInt32(jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value);
 
                 return Ok(_userService.GetUserDetails(id));
@@ -129,7 +131,7 @@ namespace TeaPost.Controllers
             try
             {
                 var authToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
+                var jwtToken = _jwtHandler.ReadJwtToken(authToken);
                 int id = Convert.ToInt32(jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value);
                 return Ok(_userService.UpdateUser(id, payload));
             }
@@ -165,7 +167,7 @@ namespace TeaPost.Controllers
             try
             {
                 var authToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
+                var jwtToken = _jwtHandler.ReadJwtToken(authToken);
                 int follower = Convert.ToInt32(jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value);
                 if (isFollow)
                 {
@@ -192,7 +194,7 @@ namespace TeaPost.Controllers
             try
             {
                 var authToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
-                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
+                var jwtToken = _jwtHandler.ReadJwtToken(authToken);
                 int follower = Convert.ToInt32(jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value);
                 return Ok(_userService.GetFollowers(follower));
             }

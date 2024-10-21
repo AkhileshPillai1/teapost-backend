@@ -3,12 +3,24 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using TeaPost.DatabaseConnection;
 using TeaPost.Interfaces;
 using TeaPost.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost4200", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 //Registering controllers
 builder.Services.AddControllers();
@@ -55,7 +67,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 //Registering custom services
-builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<JwtSecurityTokenHandler, JwtSecurityTokenHandler>();
+builder.Services.AddHttpContextAccessor();
 
 //Registering DB Context
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
@@ -92,6 +107,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("AllowLocalhost4200");
 
 app.UseHttpsRedirection();
 

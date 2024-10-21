@@ -13,11 +13,13 @@ namespace TeaPost.Services
     public class UserService : IUserService
     {
         private readonly ApplicationDBContext _dbContext;
-        private readonly IConfiguration _configuration; 
-        public UserService(ApplicationDBContext dBContext, IConfiguration configuration)
+        private readonly IConfiguration _configuration;
+        private readonly JwtSecurityTokenHandler _jwtHandler;
+        public UserService(ApplicationDBContext dBContext, IConfiguration configuration, JwtSecurityTokenHandler jwtHandler)
         {
             _dbContext = dBContext;
             _configuration = configuration;
+            _jwtHandler = jwtHandler;
         }
         public GenericResponse Login(string email, string password)
         {
@@ -42,13 +44,13 @@ namespace TeaPost.Services
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? ""));
                 var signIn = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
                 var token = new JwtSecurityToken(_configuration["Jwt:Issuer"], _configuration["Jwt:Audience"], claims, null, DateTime.UtcNow.AddMinutes(240), signIn);
-                string tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
+                string tokenStr = _jwtHandler.WriteToken(token);
                 return new GenericResponse()
                 {
                     data = new
                     {
                         token = tokenStr,
-                        user = user
+                        user = user.ToUserResponse()
                     }
                 };
             }
