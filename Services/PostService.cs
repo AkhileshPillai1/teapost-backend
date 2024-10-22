@@ -69,5 +69,91 @@ namespace TeaPost.Services
                 };
             }
         }
+        public async Task<GenericResponse> UpdatePostCaption(int id, string caption)
+        {
+            try
+            {
+                var post = _dbContext.Posts.Find(id);
+                if (post == null)
+                {
+                    return new GenericResponse()
+                    {
+                        isSuccess = false,
+                        message = "Couldn't find a post associated with this id!"
+                    };
+                }
+                post.Caption = caption;
+                await _dbContext.SaveChangesAsync();
+                return new GenericResponse()
+                {
+                    message = "Post Updated successfully!"
+                };
+            }
+            catch (DbUpdateException dbEx)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = "Error while performing database action!",
+                    detailedMessage = dbEx.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
+            }
+        }
+        public GenericResponse GetPostsByUserId(int userId)
+        {
+            try
+            {
+                var posts = _dbContext.Posts.Where(post => post.AuthorId == userId);
+                if (posts != null && posts.Count() > 0)
+                {
+                    return new GenericResponse()
+                    {
+                        data = posts
+                    };
+                }
+                else
+                {
+                    return new GenericResponse()
+                    {
+                        isSuccess = false,
+                        message = "No Posts found!"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
+            }
+        }
+        public GenericResponse GetAllPosts()
+        {
+            try
+            {
+                return new GenericResponse()
+                {
+                    data = _dbContext.Posts.ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
+            }
+        }
     }
 }
