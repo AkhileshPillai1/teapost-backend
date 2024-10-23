@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
+using TeaPost.DTOs.Comment;
 using TeaPost.Interfaces;
 using TeaPost.Models;
 
@@ -38,6 +39,46 @@ namespace TeaPost.Controllers
                 {
                     return Ok(await _likeCommentService.RemoveLike(id, Convert.ToInt32(payload["postId"])));
                 }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("CreateComment")]
+        public async Task<IActionResult> CreateComment(CreateCommentDTO payload)
+        {
+            try
+            {
+                var authToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+                var jwtToken = _jwtHandler.ReadJwtToken(authToken);
+                int id = Convert.ToInt32(jwtToken.Claims.FirstOrDefault(claim => claim.Type == "UserId")?.Value);
+
+                return Ok(await _likeCommentService.CreateComment(id, payload));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+        [Authorize]
+        [HttpDelete("DeleteComment")]
+        public async Task<IActionResult> DeleteComment(int commentId)
+        {
+            try
+            {
+                return Ok(await _likeCommentService.DeleteComment(commentId));
             }
             catch (Exception ex)
             {

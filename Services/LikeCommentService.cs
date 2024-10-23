@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TeaPost.DatabaseConnection;
+using TeaPost.DTOs.Comment;
 using TeaPost.Interfaces;
 using TeaPost.Models;
 
@@ -89,6 +90,80 @@ namespace TeaPost.Services
                 };
             }
             catch (Exception ex)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
+            }
+        }
+        public async Task<GenericResponse> CreateComment(int userId, CreateCommentDTO comment)
+        {
+            try
+            {
+                var post = _dbContext.Posts.Find(comment.PostId);
+                if (post == null)
+                {
+                    return new GenericResponse()
+                    {
+                        isSuccess = false,
+                        message = "No post found with this id!"
+                    };
+                }
+                var newComment = new Comment()
+                {
+                    AuthorId = userId,
+                    PostId = comment.PostId,
+                    Text = comment.Text,
+                };
+                _dbContext.Comments.Add(newComment);
+                post.Comments++;
+                await _dbContext.SaveChangesAsync();
+                return new GenericResponse()
+                {
+                    message = "Comment created successfully",
+                    data = new
+                    {
+                        commentId = newComment.CommentId
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                return new GenericResponse()
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                };
+            }
+        }
+        public async Task<GenericResponse> DeleteComment(int commentId)
+        {
+            try
+            {
+                var comment = _dbContext.Comments.Find(commentId);
+                if (comment == null)
+                {
+                    return new GenericResponse()
+                    {
+                        isSuccess = false,
+                        message = "No comment found with this id!"
+                    };
+                }
+                _dbContext.Comments.Remove(comment);
+                var post = _dbContext.Posts.Find(comment.PostId);
+                if(post != null)
+                {
+                    post.Comments--;
+                }
+                await _dbContext.SaveChangesAsync();
+                return new GenericResponse()
+                {
+                    message = "Commented deleted!"
+                };
+            }
+            catch(Exception ex)
             {
                 return new GenericResponse()
                 {
