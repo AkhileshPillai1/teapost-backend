@@ -13,7 +13,8 @@ namespace TeaPost.Controllers
     {
         private readonly IPostService _postService;
         private readonly JwtSecurityTokenHandler _jwtHandler;
-        public PostController(IPostService postService, JwtSecurityTokenHandler jwtHandler) { 
+        public PostController(IPostService postService, JwtSecurityTokenHandler jwtHandler)
+        {
             _postService = postService;
             _jwtHandler = jwtHandler;
         }
@@ -24,7 +25,7 @@ namespace TeaPost.Controllers
         {
             try
             {
-                if(string.IsNullOrWhiteSpace(postObj.Caption) && string.IsNullOrWhiteSpace(postObj.ImageUrl))
+                if (string.IsNullOrWhiteSpace(postObj.Caption) && string.IsNullOrWhiteSpace(postObj.ImageUrl))
                 {
                     return BadRequest(new GenericResponse()
                     {
@@ -38,7 +39,7 @@ namespace TeaPost.Controllers
                 }
             }
             catch (Exception ex)
-            { 
+            {
                 return StatusCode(500, new GenericResponse()
                 {
                     isSuccess = false,
@@ -75,7 +76,7 @@ namespace TeaPost.Controllers
 
                 return Ok(_postService.GetPostsByUserId(id));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new GenericResponse()
                 {

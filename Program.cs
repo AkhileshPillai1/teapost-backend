@@ -23,7 +23,11 @@ builder.Services.AddCors(options =>
 });
 
 //Registering controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+    {
+        options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+    });
 
 //Registering Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -69,6 +73,7 @@ builder.Services.AddSwaggerGen(c =>
 //Registering custom services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ILikeCommentService, LikeCommentService>();
 builder.Services.AddScoped<JwtSecurityTokenHandler, JwtSecurityTokenHandler>();
 builder.Services.AddHttpContextAccessor();
 
